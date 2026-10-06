@@ -45,6 +45,7 @@ a:hover{text-decoration-thickness:2px}
 /* hero */
 .hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:center;padding:44px 0 12px}
 h1{font:700 clamp(2.7rem,6.4vw,4.7rem)/.98 var(--display);letter-spacing:-.03em;margin:0 0 14px}
+.portrait{display:block;width:120px;height:120px;border-radius:50%;object-fit:cover;border:1px solid var(--line);margin:0 0 22px;background:var(--surface)}
 .role{font-size:1.05rem;font-weight:600;margin:0 0 14px}
 .lede{max-width:46ch;color:var(--muted);margin:0 0 22px;font-size:1.05rem}
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
@@ -141,6 +142,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-bet
   .top nav{gap:14px}
 }
 @media (max-width:520px){
+  .portrait{width:92px;height:92px;margin-bottom:16px}
   .top nav a[href="#background"]{display:none}
   .brand span{white-space:nowrap;font-size:1rem}
   .top nav{gap:12px}
@@ -154,7 +156,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-bet
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#top">
-      <img class="avatar" src="/images/profile_kushal.jpeg" alt="" onerror="this.remove()">
+      <img class="avatar" src="/images/profile_kushal.jpg" alt="" onerror="this.remove()">
       <span>Kushal Koirala</span>
     </a>
     <nav aria-label="Sections">
@@ -170,6 +172,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-bet
   <div class="wrap">
     <div class="hero">
       <div>
+        <img class="portrait" src="/images/profile_kushal.jpg" alt="Photo of Kushal Koirala" width="120" height="120" onerror="this.remove()">
         <h1>Kushal Koirala</h1>
         <p class="role">PhD candidate in Bioinformatics and Computational Biology, UNC Chapel Hill</p>
         <p class="lede">I build computational pipelines for drug discovery: knowledge-graph models that suggest new uses for existing drugs, screens of billion-compound libraries, and simulations of how molecules bind.</p>
