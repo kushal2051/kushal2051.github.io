@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kushal Koirala | Computational drug discovery</title>
+<meta name="description" content="Kushal Koirala is a PhD candidate in Bioinformatics and Computational Biology at UNC Chapel Hill working on computational drug discovery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F4F7; --surface:#FFFFFF; --ink:#17203A; --muted:#566077; --line:#D3D9E4;
+  --a:#2848C8; --b:#0F7A70; --c:#8A3FA0; --d:#B8650F; --focus:#2848C8;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0E1424; --surface:#161E33; --ink:#E7EBF4; --muted:#9BA5BC; --line:#2B3553;
+    --a:#7C95FF; --b:#3FC4B3; --c:#C58BE0; --d:#F0A24B; --focus:#9FB2FF;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 1rem/1.6 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-underline-offset:3px;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--paper);padding:8px 12px;border-radius:6px;z-index:20}
+.skip:focus{left:8px}
+
+/* header */
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font:700 1.08rem var(--display);text-decoration:none;color:var(--ink)}
+.avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+.top nav{display:flex;gap:18px}
+.top nav a{color:var(--muted);text-decoration:none;font-weight:500;font-size:.95rem}
+.top nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:center;padding:44px 0 12px}
+h1{font:700 clamp(2.7rem,6.4vw,4.7rem)/.98 var(--display);letter-spacing:-.03em;margin:0 0 14px}
+.role{font-size:1.05rem;font-weight:600;margin:0 0 14px}
+.lede{max-width:46ch;color:var(--muted);margin:0 0 22px;font-size:1.05rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.btn{display:inline-block;padding:9px 18px;border-radius:999px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;font-weight:600;font-size:.95rem}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn:hover{text-decoration:none;opacity:.88}
+.plain{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem}
+
+/* graph */
+.graphwrap{position:relative}
+#graph{width:100%;height:auto;display:block;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.node{cursor:grab;transition:opacity .2s}
+.node:active{cursor:grabbing}
+.node:focus-visible{outline:none}
+.node:focus-visible .shape{stroke:var(--focus);stroke-width:3.5}
+.node.sel .shape{stroke:var(--ink);stroke-width:3}
+.shape{stroke:var(--paper);stroke-width:2}
+.tlabel{font:600 13px var(--body);fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round;pointer-events:none}
+.link{stroke:var(--muted);stroke-opacity:.38;stroke-width:1;transition:stroke-opacity .2s}
+.node.off{opacity:.16}
+.link.off{stroke-opacity:.06}
+svg.hov .node:not(.nb){opacity:.25}
+svg.hov .link:not(.nb){stroke-opacity:.05}
+svg.hov .link.nb{stroke-opacity:.85}
+.tip{position:absolute;z-index:2;pointer-events:none;max-width:260px;background:var(--ink);color:var(--paper);padding:6px 10px;border-radius:6px;font-size:.85rem;line-height:1.35;transform:translate(-50%,-100%)}
+.tip[hidden]{display:none}
+.legend{display:flex;gap:18px;align-items:center;color:var(--muted);font-size:.88rem;margin:4px 0 0}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.detail{margin-top:12px;border-left:4px solid var(--sel,var(--line));padding:2px 0 2px 14px;min-height:7.6rem}
+.detail h2{font:700 1.05rem/1.3 var(--display);margin:0 0 4px}
+.detail p{margin:0 0 6px;color:var(--muted);font-size:.95rem}
+.linkbtn{background:none;border:0;padding:0;color:var(--ink);font:600 .92rem var(--body);text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin-right:14px}
+
+/* sections */
+section{padding:56px 0 8px}
+.sec{font:700 clamp(1.6rem,3vw,2.1rem)/1.15 var(--display);letter-spacing:-.015em;margin:0 0 20px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin-bottom:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 .9rem var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.chip .n{color:var(--muted);font-weight:400}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c0,var(--muted));flex:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 13px;font:500 .9rem var(--body);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.search{flex:1 1 200px;max-width:320px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:400 .95rem var(--body)}
+.status{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:.9rem;min-height:1.6rem;margin-bottom:4px}
+.list{list-style:none;margin:0;padding:0}
+.item{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;padding:18px 12px;border-top:1px solid var(--line)}
+.item.sel{background:color-mix(in srgb,var(--ink) 6%,transparent);box-shadow:inset 4px 0 0 var(--ink)}
+.when{display:flex;gap:8px;align-items:flex-start;color:var(--muted);font-size:.9rem;padding-top:4px}
+.when svg{flex:none;margin-top:4px}
+.title{font-weight:600;font-size:1.02rem;line-height:1.42;margin:0 0 4px}
+.meta{color:var(--muted);font-size:.92rem;margin:0 0 4px}
+.meta b{color:var(--ink);font-weight:600}
+.foot{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:.9rem}
+.empty{padding:24px 0;color:var(--muted)}
+
+/* experience */
+.timeline{list-style:none;margin:0;padding:0;position:relative}
+.timeline::before{content:"";position:absolute;left:7px;top:14px;bottom:14px;width:2px;background:var(--line)}
+.timeline>li{position:relative;padding-left:38px;margin-bottom:10px}
+.timeline>li::before{content:"";position:absolute;left:0;top:12px;width:16px;height:16px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+details summary{display:flex;align-items:center;gap:14px;cursor:pointer;list-style:none;padding:8px 0}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"";margin-left:auto;flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+details[open] summary::after{transform:rotate(-135deg)}
+.who{display:flex;flex-direction:column;min-width:0}
+.who .r{font-weight:600}
+.who .o{color:var(--muted);font-size:.93rem}
+.dates{color:var(--muted);font-size:.9rem;white-space:nowrap}
+.timeline ul{margin:2px 0 12px;padding-left:20px;color:var(--ink)}
+.timeline li li{margin:5px 0;font-size:.96rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.two h3,.grp h3{font:700 1.1rem var(--display);margin:0 0 10px}
+.plainlist{list-style:none;margin:0 0 22px;padding:0}
+.plainlist li{margin:0 0 14px}
+.plainlist .s{display:block;color:var(--muted);font-size:.93rem}
+dl.skills{display:grid;grid-template-columns:210px minmax(0,1fr);gap:12px 24px;margin:0}
+dl.skills dt{font-weight:600}
+dl.skills dd{margin:0;color:var(--muted)}
+.mini{font-weight:400;font-size:.9rem;margin-left:12px}
+footer{margin-top:64px;border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:.92rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-between}
+.flinks{display:flex;flex-wrap:wrap;gap:6px 18px}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:20px;padding-top:32px}
+  .two{grid-template-columns:1fr;gap:8px}
+  dl.skills{grid-template-columns:1fr;gap:2px 0}
+  dl.skills dd{margin-bottom:12px}
+  .item{grid-template-columns:1fr;gap:4px}
+  .dates{display:none}
+  .top nav{gap:14px}
+}
+@media (max-width:520px){
+  .top nav a[href="#background"]{display:none}
+  .brand span{white-space:nowrap;font-size:1rem}
+  .top nav{gap:12px}
+  .top nav a{font-size:.9rem}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#work">Skip to work</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <img class="avatar" src="/images/profile_kushal.jpeg" alt="" onerror="this.remove()">
+      <span>Kushal Koirala</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#work">Work</a>
+      <a href="#experience">Experience</a>
+      <a href="#background">Background</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Kushal Koirala</h1>
+        <p class="role">PhD candidate in Bioinformatics and Computational Biology, UNC Chapel Hill</p>
+        <p class="lede">I build computational pipelines for drug discovery: knowledge-graph models that suggest new uses for existing drugs, screens of billion-compound libraries, and simulations of how molecules bind.</p>
+        <div class="actions">
+          <a class="btn primary" href="/files/Kushal_Koirala_Resume.pdf">Download CV</a>
+          <a class="btn" href="mailto:kkoirala@unc.edu">Email me</a>
+        </div>
+        <div class="plain">
+          <a href="https://scholar.google.com/citations?hl=en&user=nXP0hIkAAAAJ">Google Scholar</a>
+          <a href="https://github.com/kushal2051">GitHub</a>
+          <a href="https://www.linkedin.com/in/kushal-koirala-7aa1b1145/">LinkedIn</a>
+          <a href="https://orcid.org/0009-0009-7935-4533">ORCID</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="graphwrap" id="graphwrap">
+          <svg id="graph" viewBox="0 0 640 440" role="group" aria-label="Map of research topics, papers and projects"></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span><svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="currentColor"/></svg>Paper</span>
+          <span><svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1.5" fill="currentColor"/></svg>Project</span>
+          <span>Drag any node</span>
+        </div>
+        <div class="detail" id="detail" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="work">
+    <div class="wrap">
+      <h2 class="sec">Papers and projects</h2>
+      <noscript><p class="empty">The filterable list needs JavaScript. A full publication list is on <a href="https://scholar.google.com/citations?hl=en&user=nXP0hIkAAAAJ">Google Scholar</a>.</p></noscript>
+      <div class="controls">
+        <div class="chips" id="chips" role="group" aria-label="Filter by topic"></div>
+      </div>
+      <div class="controls">
+        <div class="seg" id="kinds" role="group" aria-label="Filter by type">
+          <button type="button" data-kind="all" aria-pressed="true">All</button>
+          <button type="button" data-kind="paper" aria-pressed="false">Papers</button>
+          <button type="button" data-kind="project" aria-pressed="false">Projects</button>
+        </div>
+        <input class="search" id="q" type="search" placeholder="Search titles, authors, venues" aria-label="Search papers and projects">
+      </div>
+      <div class="status"><span id="count" aria-live="polite"></span><button type="button" class="linkbtn" id="reset" hidden>Clear filters</button></div>
+      <ul class="list" id="list"></ul>
+      <p class="empty" id="empty" hidden>Nothing matches these filters. Clear the filters to see all work.</p>
+      <p class="meta">* Co-first author. The full list is on <a href="https://scholar.google.com/citations?hl=en&user=nXP0hIkAAAAJ">Google Scholar</a>.</p>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <h2 class="sec">Experience <button type="button" class="linkbtn mini" id="toggleAll">Expand all</button></h2>
+      <ol class="timeline">
+        <li><details open>
+          <summary><span class="who"><span class="r">Graduate Research Assistant, Computational Drug Discovery</span><span class="o">UNC Chapel Hill, Curriculum in Bioinformatics and Computational Biology</span></span><span class="dates">Aug 2023 – Present</span></summary>
+          <ul>
+            <li>Developed a knowledge-graph drug repurposing pipeline with a TensorFlow multilayer perceptron for drug, disease and target classification; nominated new drug hypotheses for neurodegenerative diseases (first-author manuscript under review, ICLR 2027).</li>
+            <li>Worked with the non-profit Every Cure on MATRIX, an AI platform for drug repurposing (<a href="https://time.com/collections/best-inventions-2025/7318443/every-cure-matrix/">TIME Best Inventions 2025</a>). Co-author of the MeDIC resource that supports the platform.</li>
+            <li>Engineered transformer and diffusion models trained on protein–ligand complexes for binding pose prediction and affinity estimation.</li>
+            <li>Built an automated pipeline for PDB extraction, curation and train/test splitting; curated about 190K protein–ligand structures into PURE, a benchmark for unbiased evaluation of docking and affinity models.</li>
+            <li>Screened the Enamine REAL database (about 14B compounds) against UppS in <i>Neisseria gonorrhoeae</i> using SMARTS-based pharmacophore filtering and HTVS; identified 356 early-stage hits.</li>
+            <li>Built QSAR models for YCK2 kinase and contributed to a machine-learning implicit solvation model for free energy calculations.</li>
+            <li>Competed in CACHE blind prediction challenges, nominating top 100 hits for multiple targets; placed 7th of 25 teams in Challenge #5.</li>
+          </ul>
+        </details></li>
+        <li><details>
+          <summary><span class="who"><span class="r">Graduate Research Assistant, Computational Chemistry</span><span class="o">University of Kansas, Lawrence, KS</span></span><span class="dates">Aug 2021 – Aug 2023</span></summary>
+          <ul>
+            <li>Developed PepBinding, a Python workflow combining peptide docking with peptide Gaussian accelerated MD to predict peptide–protein binding structures (co-first-author, <i>J. Phys. Chem. B</i>).</li>
+            <li>Characterized how small-molecule ligands selective for RNA single-G bulges bind, using MD simulations, and identified structural determinants of selectivity (<i>Nucleic Acids Research</i>, 2025).</li>
+            <li>Co-authored reviews on binding free energy and kinetics prediction and book chapters on accelerated MD for drug discovery.</li>
+          </ul>
+        </details></li>
+        <li><details>
+          <summary><span class="who"><span class="r">Molecular Lab Technologist</span><span class="o">Decode Genomics and Research Center, Kathmandu, Nepal</span></span><span class="dates">Jun 2020 – Apr 2021</span></summary>
+          <ul><li>Frontline COVID-19 testing: sample preparation, DNA/RNA isolation, PCR and gel electrophoresis.</li></ul>
+        </details></li>
+        <li><details>
+          <summary><span class="who"><span class="r">Research Intern</span><span class="o">Center for Health and Disease Studies, Nepal</span></span><span class="dates">Apr 2019 – Dec 2020</span></summary>
+          <ul><li>Analyzed EGFR mutations in non-small cell lung carcinoma patients at Nepal Cancer Hospital and Research Center; set up laboratory space for microbial studies.</li></ul>
+        </details></li>
+        <li><details>
+          <summary><span class="who"><span class="r">Undergraduate Researcher</span><span class="o">Kathmandu University, Nepal</span></span><span class="dates">Mar 2018 – Sep 2018</span></summary>
+          <ul><li>Optimized production of high-fructose corn syrup for industrial application.</li></ul>
+        </details></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="background">
+    <div class="wrap">
+      <div class="two">
+        <div>
+          <h2 class="sec">Education</h2>
+          <ul class="plainlist">
+            <li><b>PhD, Bioinformatics and Computational Biology</b><span class="s">University of North Carolina at Chapel Hill, Aug 2023 – Dec 2027 (expected)</span></li>
+            <li><b>Bachelor of Technology, Biotechnology</b><span class="s">Kathmandu University, Nepal, Jul 2014 – Jul 2018</span></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="sec">Posters</h2>
+          <ul class="plainlist">
+            <li><b>Accurate prediction of binding affinity from single structure</b><span class="s">ACS Spring 2026 Meeting, Atlanta, GA, March 2026</span></li>
+            <li><b>Generation of novel drug repurposing hypotheses using LLM-augmented biomedical graph embeddings via multi-layer perceptron model</b><span class="s">ACS Fall 2025 Meeting, Washington, DC, August 2025; BCB Symposium 2025, UNC Chapel Hill</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="sec" style="margin-top:28px">Technical skills</h2>
+      <dl class="skills">
+        <dt>Computational chemistry</dt>
+        <dd>Molecular docking (GNINA, Glide), molecular dynamics (AMBER, CHARMM, GROMACS), Gaussian accelerated MD, free energy and binding kinetics, QSAR, pharmacophore modeling, high-throughput and fragment-based virtual screening, hit-to-lead optimization</dd>
+        <dt>Cheminformatics and structure</dt>
+        <dd>RDKit, Schrödinger Suite (Maestro, Glide), AlphaFold, PDB data curation, MDAnalysis, PyMOL, VMD, UCSF Chimera</dd>
+        <dt>Machine learning and data</dt>
+        <dd>PyTorch, TensorFlow, scikit-learn, transformers, diffusion models, graph neural networks and knowledge graphs (Neo4j, Cypher), Kedro, Pandas, NumPy, Seaborn</dd>
+        <dt>Programming and infrastructure</dt>
+        <dd>Python, R, Bash, MATLAB, SQL; Linux, Git, Docker, HPC with SLURM, Google Cloud, Jupyter</dd>
+        <dt>Languages</dt>
+        <dd>English, Nepali, Hindi</dd>
+      </dl>
+
+      <h2 class="sec" style="margin-top:44px">Teaching and leadership</h2>
+      <ul class="plainlist">
+        <li><b>Graduate Teaching Assistant, Statistical Modeling (BCB 720)</b><span class="s">UNC Chapel Hill, Aug – Dec 2024. Supported 10+ graduate students and led problem-solving sections.</span></li>
+        <li><b>Graduate Teaching Assistant, Biochemistry</b><span class="s">University of Kansas, Aug 2021 – Jul 2023. Led labs for 50 undergraduates, ran problem-solving sections, and mentored 2 high school students on computational projects.</span></li>
+        <li><b>Steering Committee Member, BCB Department</b><span class="s">UNC Chapel Hill, Jun 2024 – Present. Evaluated 10+ faculty candidates and contributed to 5 successful hires.</span></li>
+        <li><b>Python Programming Tutor, How To Learn To Code</b><span class="s">Jun 2024 – Present. Mentored 10+ students from non-technical backgrounds; 100% course completion.</span></li>
+        <li><b>Hackathons and training</b><span class="s">CMU x NVIDIA Federated Learning Hackathon for Biomedical Applications (2026); Bio-Agent Knowledge Graph Construction Challenge, NVIDIA x AWS (ongoing); Schrödinger high-throughput virtual screening course (2024).</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <div>Kushal Koirala, Chapel Hill, NC</div>
+    <div class="flinks">
+      <a href="mailto:kkoirala@unc.edu">kkoirala@unc.edu</a>
+      <a href="https://github.com/kushal2051">GitHub</a>
+      <a href="https://www.linkedin.com/in/kushal-koirala-7aa1b1145/">LinkedIn</a>
+      <a href="https://scholar.google.com/citations?hl=en&user=nXP0hIkAAAAJ">Google Scholar</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- content ---------- */
+var TOPICS = {
+  A:{name:'Drug repurposing', color:'var(--a)', desc:'Knowledge-graph embeddings and neural models that rank existing drugs for new diseases, including work on the MATRIX platform with Every Cure.'},
+  B:{name:'Virtual screening', color:'var(--b)', desc:'Pharmacophore filtering, high-throughput docking and QSAR to find early hits in billion-compound libraries.'},
+  C:{name:'Molecular simulation', color:'var(--c)', desc:'Molecular dynamics, Gaussian accelerated MD, and binding free energy and kinetics for peptides, RNA and small molecules.'},
+  D:{name:'Structure-based ML', color:'var(--d)', desc:'Transformer and diffusion models for binding pose and affinity, and benchmarks for evaluating them fairly.'}
+};
+var TOPIC_KEYS = Object.keys(TOPICS);
+
+var ITEMS = [
+  {id:'kg', kind:'paper', year:2026, topics:['A'],
+   title:'Drug-Target-Disease Embeddings Improve the Accuracy of Drug Repurposing Model',
+   authors:'<b>Koirala, K.</b>, DeLuca, M., Chung, C.-H., Sundar, S., Kapadia, S., Kaneva, V., Ding, E., Chirkova, R., Haendel, M. A., Bizon, C., Tropsha, A.',
+   venue:'Under review, ICLR 2027'},
+  {id:'pure', kind:'paper', year:null, topics:['D'],
+   title:'PURE: Protein–ligand benchmark for Unbiased and Rigorous Evaluation',
+   authors:'Kelestemur, E.*, <b>Koirala, K.*</b>, Tropsha, A.',
+   venue:'Manuscript in preparation',
+   note:'About 190K protein–ligand structures curated through an automated PDB pipeline.'},
+  {id:'solv', kind:'paper', year:2025, topics:['C','D'], type:'Preprint',
+   title:'Extending machine learning model for implicit solvation to free energy calculations',
+   authors:'Dey, R., Brocidiacono, M., <b>Koirala, K.</b>, Tropsha, A., Popov, K. I.',
+   venue:'arXiv', link:'https://doi.org/10.48550/arXiv.2510.20103', linkText:'arXiv'},
+  {id:'medic', kind:'paper', year:2025, topics:['A'],
+   title:'Medicines, Diseases, Indications, and Contraindications (MeDIC): A Foundational Resource to Support Drug Repurposing',
+   authors:'DeLuca et al.',
+   venue:'Nucleic Acids Research, gkaf1312', link:'https://doi.org/10.1093/nar/gkaf1312', linkText:'DOI'},
+  {id:'casp', kind:'paper', year:2025, topics:['D'],
+   title:'Modeling Protein–Protein and Protein–Ligand Interactions by the ClusPro Team in CASP16',
+   authors:'Ashizawa et al.',
+   venue:'Proteins: Structure, Function, and Bioinformatics', link:'https://doi.org/10.1002/prot.70066', linkText:'DOI'},
+  {id:'rna', kind:'paper', year:2025, topics:['C'],
+   title:'Mechanistic studies of small molecule ligands selective to RNA single G bulges',
+   authors:'Hegde et al.',
+   venue:'Nucleic Acids Research, 53(12)', link:'https://doi.org/10.1093/nar/gkaf559', linkText:'DOI'},
+  {id:'gamd', kind:'paper', year:2025, topics:['C'], type:'Book chapter',
+   title:'Gaussian Accelerated Molecular Dynamics in Drug Discovery',
+   authors:'Do, H. N., Wang, J., Joshi, K., <b>Koirala, K.</b>, Miao, Y.',
+   venue:'Computational Drug Discovery: Methods and Applications, Wiley-VCH, 21–43', link:'https://doi.org/10.1002/9783527840748.ch2', linkText:'DOI'},
+  {id:'pep', kind:'paper', year:2024, topics:['C','D'],
+   title:'PepBinding: a workflow for predicting peptide binding structures by combining peptide docking and peptide Gaussian accelerated molecular dynamics simulations',
+   authors:'Wang, J.*, <b>Koirala, K.*</b>, Do, H. N., Miao, Y.',
+   venue:'J. Phys. Chem. B', link:'https://doi.org/10.1021/acs.jpcb.4c02047', linkText:'DOI'},
+  {id:'fek', kind:'paper', year:2024, topics:['C'], type:'Review',
+   title:'Understanding the impact of binding free energy and kinetics calculations in modern drug discovery',
+   authors:'Adediwura, V. A.*, <b>Koirala, K.*</b>, Do, H. N., Wang, J., Miao, Y.',
+   venue:'Expert Opinion on Drug Discovery', link:'https://doi.org/10.1080/17460441.2024.2349149', linkText:'DOI'},
+  {id:'mdchap', kind:'paper', year:2024, topics:['C'], type:'Book chapter',
+   title:'Accelerating molecular dynamics simulations for drug discovery',
+   authors:'<b>Koirala, K.</b> et al.',
+   venue:'Computational Drug Discovery and Design, Springer US, 187–202'},
+  {id:'kin', kind:'paper', year:2023, topics:['C'], type:'Review',
+   title:'Predicting biomolecular binding kinetics: A review',
+   authors:'Wang, J., Do, H. N., <b>Koirala, K.</b>, Miao, Y.',
+   venue:'J. Chem. Theory Comput.', link:'https://doi.org/10.1021/acs.jctc.2c01085', linkText:'DOI'},
+
+  {id:'matrix', kind:'project', topics:['A'],
+   title:'MATRIX drug repurposing with Every Cure',
+   blurb:'Built and ran machine-learning experiments on a biomedical knowledge graph to generate repurposing nominations across all known diseases. MATRIX was named one of TIME’s Best Inventions of 2025.',
+   link:'https://time.com/collections/best-inventions-2025/7318443/every-cure-matrix/', linkText:'TIME feature'},
+  {id:'upps', kind:'project', topics:['B'],
+   title:'Screening 14 billion compounds for an antibiotic target',
+   blurb:'Screened the Enamine REAL database against UppS in Neisseria gonorrhoeae with pharmacophore filtering and high-throughput virtual screening. 356 early-stage hits moved on to experimental validation.'},
+  {id:'yck2', kind:'project', topics:['B'],
+   title:'YCK2 kinase QSAR models',
+   blurb:'QSAR models that rank candidate compounds for structure–activity relationship optimization.'},
+  {id:'cache', kind:'project', topics:['B'],
+   title:'CACHE blind hit-finding challenges',
+   blurb:'Nominated top 100 hits for multiple targets in blind prediction challenges and placed 7th of 25 teams in Challenge #5.'},
+  {id:'pose', kind:'project', topics:['D'],
+   title:'Transformer and diffusion models for protein–ligand binding',
+   blurb:'Models with millions of parameters, trained on protein–ligand complexes, that predict binding poses and estimate ligand affinity.'}
+];
+var BY_ID = {};
+ITEMS.forEach(function(it){ BY_ID[it.id] = it; });
+
+/* ---------- state ---------- */
+var state = {topic:null, kind:'all', q:'', sel:null};
+
+function matches(it){
+  if(state.topic && it.topics.indexOf(state.topic) < 0) return false;
+  if(state.kind !== 'all' && it.kind !== state.kind) return false;
+  if(state.q){
+    var hay = (it.title+' '+(it.authors||'')+' '+(it.venue||'')+' '+(it.blurb||'')+' '+(it.note||'')).replace(/<[^>]+>/g,' ').toLowerCase();
+    if(hay.indexOf(state.q.toLowerCase()) < 0) return false;
+  }
+  return true;
+}
+
+/* ---------- list ---------- */
+var listEl = document.getElementById('list');
+var countEl = document.getElementById('count');
+var emptyEl = document.getElementById('empty');
+var resetEl = document.getElementById('reset');
+var searchEl = document.getElementById('q');
+var chipsEl = document.getElementById('chips');
+var kindsEl = document.getElementById('kinds');
+var detailEl = document.getElementById('detail');
+
+var MARK = {
+  paper:'<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor"/></svg>',
+  project:'<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" rx="1.5" fill="currentColor"/></svg>'
+};
+
+function itemHTML(it){
+  var dots = it.topics.map(function(t){
+    return '<span class="dot" style="--c0:'+TOPICS[t].color+'" title="'+TOPICS[t].name+'"></span>';
+  }).join('');
+  var when = it.kind === 'paper' ? (it.year || 'In prep.') : 'Project';
+  var body = '';
+  if(it.kind === 'paper'){
+    body += '<p class="meta">'+it.authors+'</p>';
+    body += '<p class="meta"><i>'+it.venue+'</i>'+(it.type ? ' ('+it.type+')' : '')+'</p>';
+    if(it.note) body += '<p class="meta">'+it.note+'</p>';
+  } else {
+    body += '<p class="meta">'+it.blurb+'</p>';
+  }
+  var link = it.link ? '<a href="'+it.link+'" target="_blank" rel="noopener">'+it.linkText+'</a>' : '';
+  return '<li class="item'+(state.sel===it.id?' sel':'')+'" id="w-'+it.id+'">'+
+    '<div class="when">'+MARK[it.kind]+'<span>'+when+'</span></div>'+
+    '<div><p class="title">'+it.title+'</p>'+body+
+    '<div class="foot">'+dots+link+'</div></div></li>';
+}
+
+function renderList(){
+  var vis = ITEMS.filter(matches);
+  listEl.innerHTML = vis.map(itemHTML).join('');
+  countEl.textContent = 'Showing '+vis.length+' of '+ITEMS.length;
+  emptyEl.hidden = vis.length > 0;
+  resetEl.hidden = !(state.topic || state.kind !== 'all' || state.q || state.sel);
+}
+
+function renderChips(){
+  var html = '<button type="button" class="chip" data-t="" aria-pressed="'+(!state.topic)+'">All topics <span class="n">'+ITEMS.length+'</span></button>';
+  TOPIC_KEYS.forEach(function(k){
+    var n = ITEMS.filter(function(it){ return it.topics.indexOf(k) >= 0; }).length;
+    html += '<button type="button" class="chip" data-t="'+k+'" aria-pressed="'+(state.topic===k)+'">'+
+      '<span class="dot" style="--c0:'+TOPICS[k].color+'"></span>'+TOPICS[k].name+' <span class="n">'+n+'</span></button>';
+  });
+  chipsEl.innerHTML = html;
+}
+
+function renderKinds(){
+  Array.prototype.forEach.call(kindsEl.querySelectorAll('button'), function(b){
+    b.setAttribute('aria-pressed', String(b.getAttribute('data-kind') === state.kind));
+  });
+}
+
+function renderDetail(){
+  var color = 'var(--line)', html;
+  if(state.sel){
+    var it = BY_ID[state.sel];
+    color = TOPICS[it.topics[0]].color;
+    html = '<h2>'+it.title+'</h2><p>'+(it.kind==='paper' ? it.venue+(it.year?', '+it.year:'') : it.blurb)+'</p>'+
+      '<button type="button" class="linkbtn" data-act="show">Show in list</button>'+
+      (it.link ? '<a href="'+it.link+'" target="_blank" rel="noopener" style="font-weight:600;font-size:.92rem">'+it.linkText+'</a>' : '');
+  } else if(state.topic){
+    var t = TOPICS[state.topic];
+    var n = ITEMS.filter(function(i){ return i.topics.indexOf(state.topic)>=0; });
+    var p = n.filter(function(i){return i.kind==='paper'}).length;
+    color = t.color;
+    html = '<h2>'+t.name+'</h2><p>'+t.desc+'</p><p>'+p+' paper'+(p===1?'':'s')+' and '+(n.length-p)+' project'+((n.length-p)===1?'':'s')+'.</p>';
+  } else {
+    html = '<h2>Explore the work</h2><p>Select a topic to filter the list below, or select a paper or project to see its details.</p>';
+  }
+  detailEl.style.setProperty('--sel', color);
+  detailEl.innerHTML = html;
+}
+
+/* ---------- graph ---------- */
+var svg = document.getElementById('graph');
+var wrap = document.getElementById('graphwrap');
+var tip = document.getElementById('tip');
+var NS = 'http://www.w3.org/2000/svg';
+var narrow = wrap.clientWidth < 520;
+var W = narrow ? 380 : 640, H = narrow ? 520 : 440;
+var RX = narrow ? 105 : 205, RY = narrow ? 175 : 135;
+svg.setAttribute('viewBox', '0 0 '+W+' '+H);
+
+function mk(name, attrs, parent){
+  var e = document.createElementNS(NS, name);
+  for(var k in attrs) e.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+
+function rng(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+var rand = rng(7);
+
+var bg = mk('rect', {width:W, height:H, fill:'transparent'}, svg);
+var gLinks = mk('g', {}, svg);
+var gNodes = mk('g', {}, svg);
+
+var nodes = [], N = {}, links = [], adj = {};
+
+var ANGLES = {A:-135, B:-45, C:45, D:135};
+TOPIC_KEYS.forEach(function(k){
+  var th = ANGLES[k] * Math.PI / 180;
+  var n = {id:k, type:'topic', r:20, color:TOPICS[k].color, ax:W/2 + RX*Math.cos(th), ay:H/2 + RY*Math.sin(th)};
+  N[k] = n; nodes.push(n);
+});
+ITEMS.forEach(function(it){
+  var n = {id:it.id, type:'item', kind:it.kind, r:it.kind==='paper'?7:8, color:TOPICS[it.topics[0]].color, item:it};
+  N[it.id] = n; nodes.push(n);
+});
+nodes.forEach(function(n){
+  n.x = W/2 + (rand()-.5)*30; n.y = H/2 + (rand()-.5)*30; n.vx = 0; n.vy = 0; n.fx = null; n.fy = null;
+  adj[n.id] = {};
+});
+ITEMS.forEach(function(it){
+  it.topics.forEach(function(t){
+    links.push({s:N[it.id], t:N[t]});
+    adj[it.id][t] = true; adj[t][it.id] = true;
+  });
+});
+
+links.forEach(function(l){ l.el = mk('line', {'class':'link'}, gLinks); });
+
+nodes.forEach(function(n){
+  var g = mk('g', {'class':'node n-'+n.type, tabindex:'0', role:'button'}, gNodes);
+  if(n.type === 'topic'){
+    g.setAttribute('aria-label', 'Filter by '+TOPICS[n.id].name);
+    g.setAttribute('aria-pressed', 'false');
+    mk('circle', {'class':'shape', r:n.r, fill:n.color}, g);
+    var t = mk('text', {'class':'tlabel', y:(ANGLES[n.id] < 0 ? -(n.r+9) : n.r+17)}, g);
+    t.textContent = TOPICS[n.id].name;
+  } else {
+    g.setAttribute('aria-label', (n.kind==='paper'?'Paper: ':'Project: ')+n.item.title);
+    if(n.kind === 'paper') mk('circle', {'class':'shape', r:n.r, fill:n.color}, g);
+    else mk('rect', {'class':'shape', x:-n.r, y:-n.r, width:n.r*2, height:n.r*2, rx:2.5, fill:n.color}, g);
+  }
+  n.el = g;
+});
+
+/* forces */
+var alpha = 1, raf = null, hoverNode = null;
+
+function step(){
+  var cx = W/2, cy = H/2, i, j, a, b, dx, dy, d2, d, k, f;
+  for(i = 0; i < nodes.length; i++){
+    a = nodes[i];
+    for(j = i+1; j < nodes.length; j++){
+      b = nodes[j];
+      dx = b.x - a.x; dy = b.y - a.y; d2 = dx*dx + dy*dy;
+      if(d2 < 1){ dx = rand()-.5; dy = rand()-.5; d2 = dx*dx + dy*dy + .01; }
+      d = Math.sqrt(d2);
+      k = (a.type==='topic' && b.type==='topic') ? 30000 : (a.type==='topic' || b.type==='topic') ? 2800 : 950;
+      f = k / d2 * alpha;
+      a.vx -= dx/d*f; a.vy -= dy/d*f; b.vx += dx/d*f; b.vy += dy/d*f;
+      var min = a.r + b.r + 12;
+      if(d < min){ f = (min-d)*.4; a.vx -= dx/d*f; a.vy -= dy/d*f; b.vx += dx/d*f; b.vy += dy/d*f; }
+    }
+  }
+  links.forEach(function(l){
+    var s = l.s, t = l.t, L = s.item.topics.length > 1 ? 80 : 64;
+    var dx = t.x - s.x, dy = t.y - s.y, d = Math.sqrt(dx*dx + dy*dy) || 1;
+    var f = (d - L) * .07;
+    s.vx += dx/d*f*.85; s.vy += dy/d*f*.85; t.vx -= dx/d*f*.15; t.vy -= dy/d*f*.15;
+  });
+  nodes.forEach(function(n){
+    if(n.type === 'topic'){ n.vx += (n.ax - n.x)*.05; n.vy += (n.ay - n.y)*.05; }
+    else { n.vx += (cx - n.x)*.003; n.vy += (cy - n.y)*.003; }
+    if(n.fx !== null){ n.x = n.fx; n.y = n.fy; n.vx = n.vy = 0; return; }
+    n.vx *= .8; n.vy *= .8;
+    n.x += n.vx; n.y += n.vy;
+    var px = n.type==='topic' ? (narrow ? 74 : 78) : 18;
+    n.x = Math.max(px, Math.min(W-px, n.x));
+    n.y = Math.max(28, Math.min(H-(n.type==='topic'?44:22), n.y));
+  });
+}
+
+function draw(){
+  nodes.forEach(function(n){ n.el.setAttribute('transform', 'translate('+n.x.toFixed(1)+' '+n.y.toFixed(1)+')'); });
+  links.forEach(function(l){
+    l.el.setAttribute('x1', l.s.x.toFixed(1)); l.el.setAttribute('y1', l.s.y.toFixed(1));
+    l.el.setAttribute('x2', l.t.x.toFixed(1)); l.el.setAttribute('y2', l.t.y.toFixed(1));
+  });
+  if(hoverNode) placeTip(hoverNode);
+}
+
+function loop(){
+  step(); alpha *= .975; draw();
+  if(alpha > .02) raf = requestAnimationFrame(loop); else raf = null;
+}
+function kick(a){
+  if(reduce) return;
+  alpha = Math.max(alpha, a);
+  if(!raf) raf = requestAnimationFrame(loop);
+}
+
+if(reduce){
+  for(var s = 0; s < 500; s++){ step(); alpha = Math.max(.02, alpha*.99); }
+  alpha = .02;
+  draw();
+} else {
+  draw();
+  kick(1);
+}
+
+/* graph visual state */
+function updateGraph(){
+  nodes.forEach(function(n){
+    var off, sel = false;
+    if(n.type === 'topic'){
+      off = !!state.topic && state.topic !== n.id;
+      sel = state.topic === n.id && !state.sel;
+      n.el.setAttribute('aria-pressed', String(state.topic === n.id));
+    } else {
+      off = !matches(n.item);
+      sel = state.sel === n.id;
+    }
+    n.el.classList.toggle('off', off);
+    n.el.classList.toggle('sel', sel);
+  });
+  links.forEach(function(l){
+    var off = !matches(l.s.item) || (!!state.topic && l.t.id !== state.topic);
+    l.el.classList.toggle('off', off);
+  });
+}
+
+/* hover and tip */
+function placeTip(n){
+  var r = n.el.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+  var x = r.left + r.width/2 - w.left, y = r.top - w.top - 6;
+  x = Math.max(100, Math.min(w.width - 100, x));
+  tip.style.left = x+'px'; tip.style.top = Math.max(26, y)+'px';
+}
+function hover(n){
+  hoverNode = n;
+  svg.classList.add('hov');
+  nodes.forEach(function(m){ m.el.classList.toggle('nb', m === n || !!adj[n.id][m.id]); });
+  links.forEach(function(l){ l.el.classList.toggle('nb', l.s === n || l.t === n); });
+  if(n.type === 'item'){ tip.textContent = n.item.title; tip.hidden = false; placeTip(n); }
+}
+function unhover(){
+  hoverNode = null;
+  svg.classList.remove('hov');
+  tip.hidden = true;
+}
+
+/* interaction */
+function toSvg(e){
+  var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+var drag = null;
+
+nodes.forEach(function(n){
+  var g = n.el;
+  g.addEventListener('pointerenter', function(){ if(!drag) hover(n); });
+  g.addEventListener('pointerleave', function(){ if(!drag) unhover(); });
+  g.addEventListener('focus', function(){ hover(n); });
+  g.addEventListener('blur', unhover);
+  g.addEventListener('pointerdown', function(e){
+    drag = {n:n, x:e.clientX, y:e.clientY, moved:false};
+    n.fx = n.x; n.fy = n.y;
+    try{ g.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  g.addEventListener('pointermove', function(e){
+    if(!drag || drag.n !== n) return;
+    if(!drag.moved && Math.abs(e.clientX-drag.x) + Math.abs(e.clientY-drag.y) > 4) drag.moved = true;
+    if(!drag.moved) return;
+    var p = toSvg(e);
+    n.fx = Math.max(20, Math.min(W-20, p.x)); n.fy = Math.max(24, Math.min(H-24, p.y));
+    if(reduce){ n.x = n.fx; n.y = n.fy; draw(); } else kick(.3);
+  });
+  function release(){
+    if(!drag || drag.n !== n) return;
+    var moved = drag.moved;
+    n.fx = null; n.fy = null; drag = null;
+    if(!moved){ n.type === 'topic' ? pickTopic(n.id) : pickItem(n.id); }
+  }
+  g.addEventListener('pointerup', release);
+  g.addEventListener('pointercancel', function(){ if(drag){ n.fx = null; n.fy = null; drag = null; } });
+  g.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); n.type === 'topic' ? pickTopic(n.id) : pickItem(n.id); }
+  });
+});
+bg.addEventListener('click', function(){ state.sel = null; state.topic = null; refresh(); });
+
+/* ---------- actions ---------- */
+function refresh(){
+  renderChips(); renderKinds(); renderList(); renderDetail(); updateGraph();
+}
+function pickTopic(k){
+  state.topic = (state.topic === k) ? null : k;
+  state.sel = null;
+  refresh();
+}
+function pickItem(id){
+  if(!matches(BY_ID[id])){ state.topic = null; state.kind = 'all'; state.q = ''; searchEl.value = ''; }
+  state.sel = (state.sel === id) ? null : id;
+  refresh();
+}
+function resetAll(){
+  state.topic = null; state.kind = 'all'; state.q = ''; state.sel = null; searchEl.value = '';
+  refresh();
+}
+
+chipsEl.addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  var t = b.getAttribute('data-t');
+  state.sel = null;
+  state.topic = (t && state.topic !== t) ? t : null;
+  refresh();
+});
+kindsEl.addEventListener('click', function(e){
+  var b = e.target.closest('button'); if(!b) return;
+  state.kind = b.getAttribute('data-kind'); refresh();
+});
+searchEl.addEventListener('input', function(){ state.q = searchEl.value.trim(); state.sel = null; refresh(); });
+resetEl.addEventListener('click', resetAll);
+detailEl.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act="show"]'); if(!b || !state.sel) return;
+  var li = document.getElementById('w-'+state.sel);
+  if(li) li.scrollIntoView({block:'center', behavior: reduce ? 'auto' : 'smooth'});
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && (state.sel || state.topic)){ state.sel = null; state.topic = null; refresh(); }
+});
+
+/* experience: expand all */
+var toggleAll = document.getElementById('toggleAll');
+var allOpen = false;
+toggleAll.addEventListener('click', function(){
+  allOpen = !allOpen;
+  Array.prototype.forEach.call(document.querySelectorAll('#experience details'), function(d){ d.open = allOpen; });
+  toggleAll.textContent = allOpen ? 'Collapse all' : 'Expand all';
+});
+
+refresh();
+})();
+</script>
+</body>
+</html>
