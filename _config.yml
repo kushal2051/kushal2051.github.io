@@ -20,7 +20,7 @@ repository               : "kushal2051/kushal2051.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile_kushal.jpeg"
+  avatar           : "profile_kushal.jpg"
   name             : "Kushal Koirala"
   pronouns         : "he/him"
   bio              : "PhD Student in Bioinformatics and Computational Biology"
