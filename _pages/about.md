@@ -1,5 +1,4 @@
 ---
-permalink: /
 title: "Kushal Koirala"
 excerpt: "About me"
 author_profile: true
