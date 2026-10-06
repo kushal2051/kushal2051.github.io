@@ -458,11 +458,10 @@ function renderList(){
 }
 
 function renderChips(){
-  var html = '<button type="button" class="chip" data-t="" aria-pressed="'+(!state.topic)+'">All topics <span class="n">'+ITEMS.length+'</span></button>';
+  var html = '<button type="button" class="chip" data-t="" aria-pressed="'+(!state.topic)+'">All topics</button>';
   TOPIC_KEYS.forEach(function(k){
-    var n = ITEMS.filter(function(it){ return it.topics.indexOf(k) >= 0; }).length;
     html += '<button type="button" class="chip" data-t="'+k+'" aria-pressed="'+(state.topic===k)+'">'+
-      '<span class="dot" style="--c0:'+TOPICS[k].color+'"></span>'+TOPICS[k].name+' <span class="n">'+n+'</span></button>';
+      '<span class="dot" style="--c0:'+TOPICS[k].color+'"></span>'+TOPICS[k].name+'</button>';
   });
   chipsEl.innerHTML = html;
 }
@@ -483,10 +482,9 @@ function renderDetail(){
       (it.link ? '<a href="'+it.link+'" target="_blank" rel="noopener" style="font-weight:600;font-size:.92rem">'+it.linkText+'</a>' : '');
   } else if(state.topic){
     var t = TOPICS[state.topic];
-    var n = ITEMS.filter(function(i){ return i.topics.indexOf(state.topic)>=0; });
-    var p = n.filter(function(i){return i.kind==='paper'}).length;
+    var pr = ITEMS.filter(function(i){ return i.kind==='project' && i.topics.indexOf(state.topic)>=0; }).length;
     color = t.color;
-    html = '<h2>'+t.name+'</h2><p>'+t.desc+'</p><p>'+p+' paper'+(p===1?'':'s')+' and '+(n.length-p)+' project'+((n.length-p)===1?'':'s')+'.</p>';
+    html = '<h2>'+t.name+'</h2><p>'+t.desc+'</p>'+(pr ? '<p>'+pr+' project'+(pr===1?'':'s')+'.</p>' : '');
   } else {
     html = '<h2>Explore the work</h2><p>Select a topic to filter the list below, or select a paper or project to see its details.</p>';
   }
