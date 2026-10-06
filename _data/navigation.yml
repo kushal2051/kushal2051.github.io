@@ -5,6 +5,8 @@
 # prevent it from being included in the site.
 
 main:
+  - title: "Explore"
+    url: /explore.html
   - title: "Research"
     url: "#research"
 
